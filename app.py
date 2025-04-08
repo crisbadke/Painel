@@ -21,11 +21,17 @@ if uploaded_file:
         "set": "09", "out": "10", "nov": "11", "dez": "12"
     }
 
-    def traduz_data_pt(data_str):
-        if isinstance(data_str, str):
-            for mes_pt, num in meses_pt.items():
-                data_str = re.sub(f"\\b{mes_pt}\\b", num, data_str, flags=re.IGNORECASE)
-        return data_str
+  def traduz_data_pt(data_str):
+    if isinstance(data_str, str):
+        data_str = data_str.lower()
+        data_str = re.sub(r"de", "", data_str)  # remove "de"
+        data_str = re.sub(r"[.]", "", data_str)  # remove ponto final
+        for mes_pt, num in meses_pt.items():
+            data_str = re.sub(f"\\b{mes_pt}\\b", num, data_str)
+        return data_str.strip()
+    return data_str
+
+
 
     if "Data Auditoria" in df.columns:
         df["Data Auditoria"] = df["Data Auditoria"].apply(traduz_data_pt)
