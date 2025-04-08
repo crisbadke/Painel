@@ -11,8 +11,13 @@ st.title("Painel de Eficiência da Auditoria")
 uploaded_file = st.sidebar.file_uploader("📁 Envie seu arquivo Excel de auditoria", type=["xlsx"])
 
 if uploaded_file:
-    df = pd.read_excel(uploaded_file)
-    df["Data Auditoria"] = pd.to_datetime(df["Data Auditoria"], errors='coerce', dayfirst=True)
+    df = pd.read_excel(uploaded_file, dtype=str)
+    
+    # Força a conversão de datas mesmo com strings como "26 de mar. de 2025"
+    try:
+        df["Data Auditoria"] = pd.to_datetime(df["Data Auditoria"], errors='coerce', dayfirst=True, infer_datetime_format=True)
+    except Exception as e:
+        st.error(f"Erro ao converter datas: {e}")
 
     # Verifica se há datas válidas
     if df["Data Auditoria"].notna().sum() == 0:
@@ -40,7 +45,7 @@ if uploaded_file:
         auditoria_por_convenio = filtro_df['Convenio'].value_counts().reset_index()
         auditoria_por_convenio.columns = ['Convenio', 'Total Auditorias']
 
-        valores_totais = filtro_df[['Valor de Inclusoes', 'Valor Maior', 'Valor Menor', 'Valor Exclusoes']].sum()
+        valores_totais = filtro_df[['Valor de Inclusoes', 'Valor Maior', 'Valor Menor', 'Valor Exclusoes']].apply(pd.to_numeric, errors='coerce').sum()
 
         tipo_acao_freq = filtro_df['Tipo de acao'].value_counts().reset_index()
         tipo_acao_freq.columns = ['Tipo de Ação', 'Frequência']
@@ -83,5 +88,3 @@ if uploaded_file:
 
 else:
     st.warning("⚠️ Por favor, envie um arquivo Excel para visualizar o painel.")
-
-
